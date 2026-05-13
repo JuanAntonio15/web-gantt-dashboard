@@ -82,15 +82,12 @@ export function StatsCards({ data, currentWeek }: Props) {
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--color-ink-3)', marginBottom: '12px', fontWeight: 500 }}>
           Duración
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: '40px', lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--color-ink)', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-            <span>{String(data.weeks).padStart(2, '0')}</span>
-            <span style={{ fontSize: '17px', color: 'var(--color-ink-3)', fontWeight: 400 }}>semanas</span>
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-ink-3)', letterSpacing: '.02em' }}>
-            <b style={{ color: 'var(--color-ink)', fontWeight: 600 }}>{String(data.months).padStart(2, '0')}</b>
-            <span style={{ marginLeft: '4px' }}>meses totales</span>
-          </div>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: '40px', lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--color-ink)', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span>{String(data.weeks).padStart(2, '0')}</span>
+          <span style={{ fontSize: '17px', color: 'var(--color-ink-3)', fontWeight: 400 }}>Semanas</span>
+          <span style={{ fontSize: '22px', color: 'var(--color-ink-4)', fontWeight: 300, margin: '0 2px' }}>—</span>
+          <span>{String(data.months).padStart(2, '0')}</span>
+          <span style={{ fontSize: '17px', color: 'var(--color-ink-3)', fontWeight: 400 }}>Meses</span>
         </div>
       </div>
     </section>
