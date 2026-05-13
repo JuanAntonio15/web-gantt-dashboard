@@ -1,0 +1,38 @@
+{
+  "client": "NOMBRE CLIENTE",
+  "project": "NOMBRE PROYECTO",
+  "phase": "Fase 0",
+  "title": "Carta Gantt — Fase 0",
+  "months": 3,
+  "weeks": 12,
+  "sections": [
+    {
+      "id": "repos",
+      "label": "Repositorios y proyecto base",
+      "palette": "mint",
+      "tasks": [
+        {
+          "id": "t1",
+          "label": "Crear repositorios en GitHub (web + api)",
+          "startWeek": 1,
+          "endWeek": 1,
+          "progress": 0
+        },
+        {
+          "id": "t2",
+          "label": "Estructura inicial api (Spring Boot 4.0.6 + Java 25)",
+          "startWeek": 2,
+          "endWeek": 2,
+          "progress": 0
+        },
+        {
+          "id": "t3",
+          "label": "Estructura inicial web (React 19 + Vite + Tailwind)",
+          "startWeek": 2,
+          "endWeek": 2,
+          "progress": 25
+        }
+      ]
+    }
+  ]
+}
