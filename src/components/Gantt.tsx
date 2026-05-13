@@ -7,11 +7,11 @@ import { Legend } from './Legend';
 interface Props {
   data: GanttData;
   currentWeek: number;
-  onCycle: (sectionId: string, taskId: string) => void;
+  onToggleWeek: (sectionId: string, taskId: string, week: number) => void;
   onWeekSelect: (w: number) => void;
 }
 
-export function Gantt({ data, currentWeek, onCycle, onWeekSelect }: Props) {
+export function Gantt({ data, currentWeek, onToggleWeek, onWeekSelect }: Props) {
   return (
     <div
       style={{
@@ -56,7 +56,7 @@ export function Gantt({ data, currentWeek, onCycle, onWeekSelect }: Props) {
                     palette={section.palette}
                     weeks={data.weeks}
                     currentWeek={currentWeek}
-                    onCycle={() => onCycle(section.id, task.id)}
+                    onToggleWeek={(week) => onToggleWeek(section.id, task.id, week)}
                   />
                 ))}
               </>

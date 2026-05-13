@@ -1,7 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { GanttData, Progress } from '../types';
+import type { GanttData, WeekProgress } from '../types';
 
-const PROGRESS_STEPS: Progress[] = [0, 25, 50, 75, 100];
+const CYCLE: Array<25 | 50 | 75 | 100> = [25, 50, 75, 100];
+
+function cycleWeek(weekProgress: WeekProgress[], week: number): WeekProgress[] {
+  const idx = weekProgress.findIndex(wp => wp.week === week);
+  if (idx === -1) {
+    return [...weekProgress, { week, progress: 25 as const }].sort((a, b) => a.week - b.week);
+  }
+  const cur = weekProgress[idx].progress;
+  const nextLevel = CYCLE[CYCLE.indexOf(cur) + 1];
+  if (nextLevel === undefined) {
+    return weekProgress.filter((_, i) => i !== idx);
+  }
+  return weekProgress.map((wp, i) => i === idx ? { ...wp, progress: nextLevel } : wp);
+}
 
 export function useGanttData() {
   const [data, setData] = useState<GanttData | null>(null);
@@ -9,7 +22,7 @@ export function useGanttData() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('./data.json')
+    fetch(import.meta.env.BASE_URL + 'data.json')
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json() as Promise<GanttData>;
@@ -18,7 +31,7 @@ export function useGanttData() {
       .catch(e => { setError(String(e)); setLoading(false); });
   }, []);
 
-  const cycleProgress = useCallback((sectionId: string, taskId: string) => {
+  const toggleWeek = useCallback((sectionId: string, taskId: string, week: number) => {
     setData(prev => {
       if (!prev) return prev;
       return {
@@ -29,8 +42,7 @@ export function useGanttData() {
             ...sec,
             tasks: sec.tasks.map(task => {
               if (task.id !== taskId) return task;
-              const idx = PROGRESS_STEPS.indexOf(task.progress);
-              return { ...task, progress: PROGRESS_STEPS[(idx + 1) % PROGRESS_STEPS.length] };
+              return { ...task, weekProgress: cycleWeek(task.weekProgress, week) };
             }),
           };
         }),
@@ -38,5 +50,5 @@ export function useGanttData() {
     });
   }, []);
 
-  return { data, setData, loading, error, cycleProgress };
+  return { data, setData, loading, error, toggleWeek };
 }

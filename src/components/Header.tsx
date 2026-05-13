@@ -4,13 +4,8 @@ interface Props {
   data: GanttData;
 }
 
-function pad(n: number) {
-  return n < 10 ? '0' + n : String(n);
-}
 
 export function Header({ data }: Props) {
-  const totalTasks = data.sections.reduce((a, s) => a + s.tasks.length, 0);
-
   return (
     <header
       style={{
@@ -68,33 +63,6 @@ export function Header({ data }: Props) {
         </h1>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {[
-          { val: pad(data.months), lbl: 'meses' },
-          { val: pad(data.weeks), lbl: 'semanas' },
-          { val: pad(totalTasks), lbl: 'entregables' },
-        ].map(({ val, lbl }) => (
-          <div
-            key={lbl}
-            style={{
-              background: 'rgba(255,255,255,.7)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,.8)',
-              borderRadius: '999px',
-              padding: '8px 14px',
-              fontSize: '12px',
-              color: 'var(--color-ink-2)',
-              fontWeight: 500,
-              boxShadow: 'var(--shadow-soft-sm)',
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '.02em',
-            }}
-          >
-            <b style={{ color: 'var(--color-ink)', fontWeight: 600, marginRight: '4px' }}>{val}</b>
-            {lbl}
-          </div>
-        ))}
-      </div>
     </header>
   );
 }

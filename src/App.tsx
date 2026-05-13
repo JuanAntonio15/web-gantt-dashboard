@@ -7,7 +7,7 @@ import { Gantt } from './components/Gantt';
 import { SaveIndicator } from './components/SaveIndicator';
 
 export default function App() {
-  const { data, loading, error, cycleProgress } = useGanttData();
+  const { data, loading, error, toggleWeek } = useGanttData();
   const [currentWeek, setCurrentWeek] = useState(1);
   const saveState = useAutoSave(data);
 
@@ -31,7 +31,7 @@ export default function App() {
     <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '56px 40px 80px' }}>
       <Header data={data} />
       <StatsCards data={data} currentWeek={currentWeek} />
-      <Gantt data={data} currentWeek={currentWeek} onCycle={cycleProgress} onWeekSelect={setCurrentWeek} />      
+      <Gantt data={data} currentWeek={currentWeek} onToggleWeek={toggleWeek} onWeekSelect={setCurrentWeek} />      
       <SaveIndicator state={saveState} />
     </div>
   );

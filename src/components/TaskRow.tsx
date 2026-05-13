@@ -1,24 +1,25 @@
-import type { Task } from '../types';
+import type { Task, Palette } from '../types';
 import { paletteMap } from '../lib/palettes';
-import type { Palette } from '../types';
+import { taskProgress, weekInIntervals } from '../lib/stats';
 
 interface Props {
   task: Task;
   palette: Palette;
   weeks: number;
   currentWeek: number;
-  onCycle: () => void;
+  onToggleWeek: (week: number) => void;
 }
 
 function pad(n: number) {
   return n < 10 ? '0' + n : String(n);
 }
 
-export function TaskRow({ task, palette, weeks, currentWeek, onCycle }: Props) {
+export function TaskRow({ task, palette, weeks, currentWeek, onToggleWeek }: Props) {
   const pal = paletteMap[palette];
-  const pc = task.progress;
+  const pc = taskProgress(task);
   const isDone = pc === 100;
   const isPartial = pc > 0 && pc < 100;
+
   const size = 18;
   const strokeWidth = 5;
   const radius = (size - strokeWidth) / 2;
@@ -28,68 +29,36 @@ export function TaskRow({ task, palette, weeks, currentWeek, onCycle }: Props) {
   const pctColor = isDone || isPartial ? pal.deep : 'var(--color-ink-4)';
 
   return (
-    <tr
-      onClick={onCycle}
-      style={{ cursor: 'pointer' }}
-      onMouseEnter={e => {
-        const cells = (e.currentTarget as HTMLTableRowElement).querySelectorAll('td');
-        cells.forEach(td => {
-          if (!td.dataset.curCol) td.style.background = 'var(--color-bg-1)';
-        });
-      }}
-      onMouseLeave={e => {
-        const cells = (e.currentTarget as HTMLTableRowElement).querySelectorAll('td');
-        cells.forEach(td => {
-          if (!td.dataset.curCol) td.style.background = 'var(--color-surface)';
-          else td.style.background = 'var(--color-bg-2)';
-        });
-      }}
-    >
+    <tr style={{ cursor: 'default', borderTop: '1px solid var(--color-line-2)' }}>
       <td
         style={{
           padding: '10px 28px 10px 52px',
           verticalAlign: 'middle',
           background: 'var(--color-surface)',
-          transition: 'background .12s ease',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ 
-            width: size, 
-            height: size, 
-            position: 'relative', 
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <svg 
-              width={size} 
-              height={size} 
-              style={{ transform: 'rotate(-90deg)', position: 'absolute' }}
-            >
+          {/* Ring progress indicator */}
+          <div style={{ width: size, height: size, flexShrink: 0 }}>
+            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
               <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
+                cx={size / 2} cy={size / 2} r={radius}
                 fill="transparent"
-                stroke="var(--color-line-2)"
+                stroke={pc > 0 ? pal.bg : 'var(--color-line)'}
                 strokeWidth={strokeWidth}
               />
-              <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="transparent"
-                stroke={isDone || isPartial ? pal.deep : "transparent"}
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                strokeLinecap="round"
-                style={{ 
-                  transition: 'stroke-dashoffset 0.3s ease, stroke 0.3s ease' 
-                }}
-              />
+              {pc > 0 && (
+                <circle
+                  cx={size / 2} cy={size / 2} r={radius}
+                  fill="transparent"
+                  stroke={pal.deep}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                />
+              )}
             </svg>
           </div>
 
@@ -110,7 +79,6 @@ export function TaskRow({ task, palette, weeks, currentWeek, onCycle }: Props) {
             minWidth: '38px',
             textAlign: 'right',
             color: pctColor,
-            transition: 'color .2s',
             letterSpacing: '.03em',
           }}>
             {pad(pc)}%
@@ -119,62 +87,65 @@ export function TaskRow({ task, palette, weeks, currentWeek, onCycle }: Props) {
       </td>
 
       {Array.from({ length: weeks }, (_, i) => i + 1).map(w => {
-        const inRange = w >= task.startWeek && w <= task.endWeek;
         const isCur = w === currentWeek;
+        const inInterval = weekInIntervals(task, w);
+        const wp = task.weekProgress.find(p => p.week === w);
+        const progress = wp?.progress ?? 0;
 
-        if (inRange) {
-          const span = task.endWeek - task.startWeek + 1;
-          const cmpW = (task.progress / 100) * span;
-          const ci = w - task.startWeek;
-          const filledFully = ci < Math.floor(cmpW);
-          const partial = ci === Math.floor(cmpW) && cmpW - Math.floor(cmpW) > 0;
-          const partPct = partial ? Math.round((cmpW - Math.floor(cmpW)) * 100) : 0;
-          const isFirst = w === task.startWeek;
-          const isLast = w === task.endWeek;
-          const br = isFirst && isLast ? '5px' : isFirst ? '5px 0 0 5px' : isLast ? '0 5px 5px 0' : '0';
-          const fillW = filledFully ? 100 : partial ? partPct : 0;
-
-          return (
-            <td
-              key={w}
-              data-cur-col={isCur ? '1' : undefined}
-              style={{
-                padding: '10px 4px',
-                height: '36px',
-                position: 'relative',
-                verticalAlign: 'middle',
-                background: isCur ? 'var(--color-bg-2)' : 'var(--color-surface)',
-                transition: 'background .12s ease',
-              }}
-            >
-              <div style={{ height: '16px', borderRadius: br, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', inset: 0, background: pal.bg, borderRadius: br }} />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: '0 auto 0 0',
-                    width: `${fillW}%`,
-                    background: `linear-gradient(90deg, ${pal.mid}, ${pal.deep})`,
-                    borderRadius: br,
-                    transition: 'width .55s cubic-bezier(.2,.8,.2,1)',
-                  }}
-                />
-              </div>
-            </td>
-          );
-        }
+        // Border radius per interval block edges
+        const prevInInterval = weekInIntervals(task, w - 1);
+        const nextInInterval = weekInIntervals(task, w + 1);
+        const br = inInterval
+          ? (!prevInInterval && !nextInInterval ? '4px'
+            : !prevInInterval ? '4px 0 0 4px'
+            : !nextInInterval ? '0 4px 4px 0'
+            : '0')
+          : '0';
 
         return (
           <td
             key={w}
             data-cur-col={isCur ? '1' : undefined}
+            onClick={inInterval ? () => onToggleWeek(w) : undefined}
             style={{
               padding: '10px 4px',
               height: '36px',
+              verticalAlign: 'middle',
               background: isCur ? 'var(--color-bg-2)' : 'var(--color-surface)',
+              cursor: inInterval ? 'pointer' : 'default',
               transition: 'background .12s ease',
             }}
-          />
+            onMouseEnter={e => {
+              if (inInterval) (e.currentTarget as HTMLTableCellElement).style.background = isCur ? '#EEE6D8' : 'var(--color-bg-1)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLTableCellElement).style.background = isCur ? 'var(--color-bg-2)' : 'var(--color-surface)';
+            }}
+          >
+            {inInterval && (
+              <div style={{ height: '16px', borderRadius: br, overflow: 'hidden', position: 'relative', background: pal.bg }}>
+                {progress > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, bottom: 0, left: 0,
+                    width: `${progress}%`,
+                    borderRadius: br,
+                    background: progress === 100
+                      ? `linear-gradient(90deg, ${pal.deep}, color-mix(in srgb, ${pal.deep} 70%, #000))`
+                      : `linear-gradient(90deg, ${pal.mid}, ${pal.deep})`,
+                    transition: 'width .2s ease',
+                  }} />
+                )}
+                {progress === 100 && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.18) 3px, rgba(255,255,255,.18) 4px)',
+                  }} />
+                )}
+              </div>
+            )}
+          </td>
         );
       })}
     </tr>

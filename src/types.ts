@@ -1,12 +1,20 @@
 export type Palette = 'mint' | 'sky' | 'lavender' | 'peach' | 'rose';
-export type Progress = 0 | 25 | 50 | 75 | 100;
+
+export interface WorkInterval {
+  start: number;
+  end: number;
+}
+
+export interface WeekProgress {
+  week: number;
+  progress: 25 | 50 | 75 | 100;
+}
 
 export interface Task {
   id: string;
   label: string;
-  startWeek: number;
-  endWeek: number;
-  progress: Progress;
+  intervals: WorkInterval[];
+  weekProgress: WeekProgress[];
 }
 
 export interface Section {
